@@ -7,7 +7,8 @@ typedef SelectedItemsCallBack = Function(List<SelectedListItem> selectedItems);
 
 typedef ListItemBuilder = Widget Function(SelectedListItem item);
 
-typedef BottomSheetListener = bool Function(DraggableScrollableNotification draggableScrollableNotification);
+typedef BottomSheetListener = bool Function(
+    DraggableScrollableNotification draggableScrollableNotification);
 
 class DropDown {
   /// This will give the list of data.
@@ -43,6 +44,8 @@ class DropDown {
   /// by default it is [Search] text.
   final String? searchHintText;
 
+  final TextStyle? searchHintStyle;
+
   /// [isDismissible] Specifies whether the bottom sheet will be dismissed when user taps on the scrim.
   /// If true, the bottom sheet will be dismissed when user taps on the scrim.
   /// by default it is [True].
@@ -55,22 +58,23 @@ class DropDown {
   /// by default it is [False].
   final bool useRootNavigator;
 
-  DropDown({
-    Key? key,
-    required this.data,
-    this.selectedItems,
-    this.listItemBuilder,
-    this.enableMultipleSelection = false,
-    this.bottomSheetTitle,
-    this.isDismissible = true,
-    this.submitButtonChild,
-    this.searchWidget,
-    this.searchHintText = 'Search',
-    this.isSearchVisible = true,
-    this.dropDownBackgroundColor = Colors.transparent,
-    this.bottomSheetListener,
-    this.useRootNavigator = false,
-  });
+  DropDown(
+      {Key? key,
+      required this.data,
+      this.selectedItems,
+      this.listItemBuilder,
+      this.enableMultipleSelection = false,
+      this.bottomSheetTitle,
+      this.isDismissible = true,
+      this.submitButtonChild,
+      this.searchWidget,
+      this.searchHintText = 'Search',
+      this.searchHintStyle,
+      this.isSearchVisible = true,
+      this.dropDownBackgroundColor = Colors.transparent,
+      this.bottomSheetListener,
+      this.useRootNavigator = false,
+      });
 }
 
 class DropDownState {
@@ -131,101 +135,114 @@ class _MainBodyState extends State<MainBody> {
         maxChildSize: 0.9,
         expand: false,
         builder: (BuildContext context, ScrollController scrollController) {
-          return Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    /// Bottom sheet title text
-                    Expanded(child: widget.dropDown.bottomSheetTitle ?? Container()),
+          return Container(
+            color: widget.dropDown.dropDownBackgroundColor,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      /// Bottom sheet title text
+                      Expanded(
+                          child:
+                              widget.dropDown.bottomSheetTitle ?? Container()),
 
-                    /// Done button
-                    Visibility(
-                      visible: widget.dropDown.enableMultipleSelection,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Material(
+                      /// Done button
+                      Visibility(
+                        visible: widget.dropDown.enableMultipleSelection,
+                        child: Align(
+                          alignment: Alignment.centerRight,
                           child: ElevatedButton(
                             onPressed: () {
-                              List<SelectedListItem> selectedList =
-                                  widget.dropDown.data.where((element) => element.isSelected ?? false).toList();
+                              List<SelectedListItem> selectedList = widget
+                                  .dropDown.data
+                                  .where(
+                                      (element) => element.isSelected ?? false)
+                                  .toList();
                               List<SelectedListItem> selectedNameList = [];
 
                               for (var element in selectedList) {
                                 selectedNameList.add(element);
                               }
 
-                              widget.dropDown.selectedItems?.call(selectedNameList);
+                              widget.dropDown.selectedItems
+                                  ?.call(selectedNameList);
                               _onUnFocusKeyboardAndPop();
                             },
-                            child: widget.dropDown.submitButtonChild ?? const Text('Done'),
+                            child: widget.dropDown.submitButtonChild ??
+                                const Text('Done'),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              /// A [TextField] that displays a list of suggestions as the user types with clear button.
-              Visibility(
-                visible: widget.dropDown.isSearchVisible,
-                child: widget.dropDown.searchWidget ??
-                    AppTextField(
-                      dropDown: widget.dropDown,
-                      onTextChanged: _buildSearchList,
-                      searchHintText: widget.dropDown.searchHintText,
-                    ),
-              ),
+                /// A [TextField] that displays a list of suggestions as the user types with clear button.
+                Visibility(
+                  visible: widget.dropDown.isSearchVisible,
+                  child: widget.dropDown.searchWidget ??
+                      AppTextField(
+                        dropDown: widget.dropDown,
+                        onTextChanged: _buildSearchList,
+                        searchHintText: widget.dropDown.searchHintText,
+                        searchHintStyle: widget.dropDown.searchHintStyle,
+                      ),
+                ),
 
-              /// Listview (list of data with check box for multiple selection & on tile tap single selection)
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: mainList.length,
-                  itemBuilder: (context, index) {
-                    bool isSelected = mainList[index].isSelected ?? false;
-                    return InkWell(
-                      child: Container(
-                        color: widget.dropDown.dropDownBackgroundColor,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                          child: ListTile(
-                            title: widget.dropDown.listItemBuilder?.call(mainList[index]) ??
-                                Text(
-                                  mainList[index].name,
-                                ),
-                            trailing: widget.dropDown.enableMultipleSelection
-                                ? GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        mainList[index].isSelected = !isSelected;
-                                      });
-                                    },
-                                    child: isSelected
-                                        ? const Icon(Icons.check_box)
-                                        : const Icon(Icons.check_box_outline_blank),
-                                  )
-                                : const SizedBox(
-                                    height: 0.0,
-                                    width: 0.0,
+                /// Listview (list of data with check box for multiple selection & on tile tap single selection)
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: mainList.length,
+                    itemBuilder: (context, index) {
+                      bool isSelected = mainList[index].isSelected ?? false;
+                      return InkWell(
+                        child: Container(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                            child: ListTile(
+                              title: widget.dropDown.listItemBuilder
+                                      ?.call(mainList[index]) ??
+                                  Text(
+                                    mainList[index].name,
                                   ),
+                              trailing: widget.dropDown.enableMultipleSelection
+                                  ? GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          mainList[index].isSelected =
+                                              !isSelected;
+                                        });
+                                      },
+                                      child: isSelected
+                                          ? const Icon(Icons.check_box)
+                                          : const Icon(
+                                              Icons.check_box_outline_blank),
+                                    )
+                                  : const SizedBox(
+                                      height: 0.0,
+                                      width: 0.0,
+                                    ),
+                            ),
                           ),
                         ),
-                      ),
-                      onTap: widget.dropDown.enableMultipleSelection
-                          ? null
-                          : () {
-                              widget.dropDown.selectedItems?.call([mainList[index]]);
-                              _onUnFocusKeyboardAndPop();
-                            },
-                    );
-                  },
+                        onTap: widget.dropDown.enableMultipleSelection
+                            ? null
+                            : () {
+                                widget.dropDown.selectedItems
+                                    ?.call([mainList[index]]);
+                                _onUnFocusKeyboardAndPop();
+                              },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -235,7 +252,8 @@ class _MainBodyState extends State<MainBody> {
   /// This helps when search enabled & show the filtered data in list.
   _buildSearchList(String userSearchTerm) {
     final results = widget.dropDown.data
-        .where((element) => element.name.toLowerCase().contains(userSearchTerm.toLowerCase()))
+        .where((element) =>
+            element.name.toLowerCase().contains(userSearchTerm.toLowerCase()))
         .toList();
     if (userSearchTerm.isEmpty) {
       mainList = widget.dropDown.data;

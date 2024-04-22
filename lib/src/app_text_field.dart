@@ -11,10 +11,14 @@ class AppTextField extends StatefulWidget {
   /// by default it is [Search] text.
   final String? searchHintText;
 
+  final TextStyle? searchHintStyle;
+
   const AppTextField({
     required this.dropDown,
     required this.onTextChanged,
     this.searchHintText,
+    this.searchHintStyle,
+
     Key? key,
   }) : super(key: key);
 
@@ -41,6 +45,7 @@ class _AppTextFieldState extends State<AppTextField> {
           contentPadding:
               const EdgeInsets.only(left: 0, bottom: 0, top: 0, right: 15),
           hintText: widget.searchHintText,
+          hintStyle: widget.searchHintStyle,
           border: const OutlineInputBorder(
             borderSide: BorderSide(
               width: 0,
